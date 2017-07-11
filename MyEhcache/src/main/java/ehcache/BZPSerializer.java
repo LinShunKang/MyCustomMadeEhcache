@@ -1,6 +1,6 @@
 package ehcache;
 
-import cn.lsk.kryo.KryoUtil;
+import kryo.KryoUtil;
 import org.ehcache.spi.serialization.Serializer;
 import org.ehcache.spi.serialization.SerializerException;
 

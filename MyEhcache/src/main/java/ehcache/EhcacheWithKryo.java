@@ -1,6 +1,6 @@
 package ehcache;
 
-import cn.lsk.model.WorkExperience;
+import model.WorkExperience;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.CacheConfiguration;

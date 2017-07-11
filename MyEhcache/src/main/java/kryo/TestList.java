@@ -1,7 +1,7 @@
 package kryo;
 
-import cn.lsk.model.WorkExperience;
 import com.esotericsoftware.kryo.Kryo;
+import model.WorkExperience;
 
 import java.util.ArrayList;
 import java.util.List;

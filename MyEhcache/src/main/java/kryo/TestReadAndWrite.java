@@ -1,6 +1,6 @@
 package kryo;
 
-import cn.lsk.model.WorkExperience;
+import model.WorkExperience;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
