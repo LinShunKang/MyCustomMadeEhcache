@@ -22,11 +22,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
-        <module name="MyCustomMadeEhcache" />
+        <module name="MyEhcache" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="MyCustomMadeEhcache" target="1.5" />
+      <module name="MyCustomMadeEhcache" target="1.8" />
+      <module name="MyEhcache" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
