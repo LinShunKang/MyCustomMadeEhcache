@@ -10,11 +10,28 @@ public class BZPCopier<T> implements Copier<T> {
 
     @Override
     public T copyForRead(T obj) {
+        System.out.println("BZPCopier.copyForRead(" + obj + ")");
+        if (isImmutableObj(obj)) {
+            return obj;
+        }
         return KryoUtil.getKryoInstance().copy(obj);
+    }
+
+    private boolean isImmutableObj(T obj) {
+        return obj instanceof Long
+                || obj instanceof String
+                || obj instanceof Integer
+                || obj instanceof Short
+                || obj instanceof Float
+                || obj instanceof Double;
     }
 
     @Override
     public T copyForWrite(T obj) {
+        System.out.println("BZPCopier.copyForWrite(" + obj + ")");
+        if (isImmutableObj(obj)) {
+            return obj;
+        }
         return KryoUtil.getKryoInstance().copy(obj);
     }
 }
