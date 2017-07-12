@@ -48,16 +48,6 @@ public class TestReadAndWrite {
 //        TestList.sleep(3000);
 //
         testOpt(list, times);
-
-        System.gc();
-        TestList.sleep(3000);
-
-        testOpt2(list, times);
-
-        System.gc();
-        TestList.sleep(3000);
-
-        testOpt3(list, times);
     }
 
     private static void testNormal(final List<WorkExperience> list, int times) {
@@ -118,63 +108,5 @@ public class TestReadAndWrite {
         } catch (InterruptedException e) {
         }
         System.out.println("testOpt(" + list.size() + ", " + times + "): totalListSize: " + totalListSize + ", totalBytesLength: " + totalBytesLength + ", cost: " + (System.currentTimeMillis() - startTime) + "ms");
-    }
-
-    private static void testOpt2(final List<WorkExperience> list, int times) {
-        long startTime = System.currentTimeMillis();
-        final CountDownLatch countDownLatch = new CountDownLatch(times);
-        final AtomicLong totalListSize = new AtomicLong(0L);
-        final AtomicLong totalBytesLength = new AtomicLong(0L);
-        for (int i = 0; i < times; ++i) {
-            threadPool.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        byte[] bytes = KryoUtil.writeObjectToByteArrayOpt2(list);
-                        totalBytesLength.addAndGet(bytes.length);
-
-                        List<WorkExperience> listCopy = KryoUtil.readObjectFromByteArrayOpt2(bytes, list.getClass());
-                        totalListSize.addAndGet(listCopy.size());
-                    } finally {
-                        countDownLatch.countDown();
-                    }
-                }
-            });
-        }
-
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-        }
-        System.out.println("testOpt2(" + list.size() + ", " + times + "): totalListSize: " + totalListSize + ", totalBytesLength: " + totalBytesLength + ", cost: " + (System.currentTimeMillis() - startTime) + "ms");
-    }
-
-    private static void testOpt3(final List<WorkExperience> list, int times) {
-        long startTime = System.currentTimeMillis();
-        final CountDownLatch countDownLatch = new CountDownLatch(times);
-        final AtomicLong totalListSize = new AtomicLong(0L);
-        final AtomicLong totalBytesLength = new AtomicLong(0L);
-        for (int i = 0; i < times; ++i) {
-            threadPool.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        byte[] bytes = KryoUtil.writeObjectToByteArrayOpt3(list);
-                        totalBytesLength.addAndGet(bytes.length);
-
-                        List<WorkExperience> listCopy = KryoUtil.readObjectFromByteArrayOpt3(bytes, list.getClass());
-                        totalListSize.addAndGet(listCopy.size());
-                    } finally {
-                        countDownLatch.countDown();
-                    }
-                }
-            });
-        }
-
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-        }
-        System.out.println("testOpt3(" + list.size() + ", " + times + "): totalListSize: " + totalListSize + ", totalBytesLength: " + totalBytesLength + ", cost: " + (System.currentTimeMillis() - startTime) + "ms");
     }
 }

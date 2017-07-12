@@ -44,26 +44,6 @@ public final class KryoUtil {
         }
     };
 
-    private static final ThreadLocal<UnsafeMemoryOutput> unsafeMemOutputThreadLocal = new ThreadLocal<UnsafeMemoryOutput>() {
-        @Override
-        protected UnsafeMemoryOutput initialValue() {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
-            UnsafeMemoryOutput output = new UnsafeMemoryOutput(1024, 10240);
-            output.setOutputStream(byteArrayOutputStream);
-            return output;
-        }
-    };
-
-    private static final ThreadLocal<UnsafeOutput> unsafeOutputThreadLocal = new ThreadLocal<UnsafeOutput>() {
-        @Override
-        protected UnsafeOutput initialValue() {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
-            UnsafeOutput output = new UnsafeOutput(1024, 10240);
-            output.setOutputStream(byteArrayOutputStream);
-            return output;
-        }
-    };
-
     private static final ThreadLocal<MyInput> inputThreadLocal = new ThreadLocal<MyInput>() {
         @Override
         protected MyInput initialValue() {
@@ -71,27 +51,7 @@ public final class KryoUtil {
         }
     };
 
-    private static final ThreadLocal<UnsafeMemoryInput> unsafeMemInputThreadLocal = new ThreadLocal<UnsafeMemoryInput>() {
-        @Override
-        protected UnsafeMemoryInput initialValue() {
-            return new UnsafeMemoryInput(4096);
-        }
-    };
-
-    private static final ThreadLocal<UnsafeInput> unsafeInputThreadLocal = new ThreadLocal<UnsafeInput>() {
-        @Override
-        protected UnsafeInput initialValue() {
-            return new UnsafeInput(4096);
-        }
-    };
-
-
-    /**
-     * 获得当前线程的 Kryo 实例
-     *
-     * @return 当前线程的 Kryo 实例
-     */
-    public static Kryo getInstance() {
+    public static Kryo getKryoInstance() {
         return kryoLocal.get();
     }
 
@@ -112,7 +72,7 @@ public final class KryoUtil {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
 
-        Kryo kryo = getInstance();
+        Kryo kryo = getKryoInstance();
         kryo.writeClassAndObject(output, obj);
         output.flush();
 
@@ -124,7 +84,7 @@ public final class KryoUtil {
         ByteArrayOutputStream byteArrayOutputStream = (ByteArrayOutputStream) output.getOutputStream();
 
         try {
-            Kryo kryo = getInstance();
+            Kryo kryo = getKryoInstance();
             kryo.writeClassAndObject(output, obj);
             output.flush();
 
@@ -148,7 +108,7 @@ public final class KryoUtil {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArray);
         Input input = new Input(byteArrayInputStream);
 
-        Kryo kryo = getInstance();
+        Kryo kryo = getKryoInstance();
         return (T) kryo.readClassAndObject(input);
     }
 
@@ -159,7 +119,7 @@ public final class KryoUtil {
         input.setInputStream(byteArrayInputStream);
 
         try {
-            Kryo kryo = getInstance();
+            Kryo kryo = getKryoInstance();
             return (T) kryo.readClassAndObject(input);
         } finally {
             input.rewind();
@@ -183,7 +143,7 @@ public final class KryoUtil {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
 
-        Kryo kryo = getInstance();
+        Kryo kryo = getKryoInstance();
         kryo.writeObject(output, obj);
         output.flush();
 
@@ -194,7 +154,7 @@ public final class KryoUtil {
         Output output = outputThreadLocal.get();
         ByteArrayOutputStream byteArrayOutputStream = (ByteArrayOutputStream) output.getOutputStream();
         try {
-            Kryo kryo = getInstance();
+            Kryo kryo = getKryoInstance();
             kryo.writeObject(output, obj);
             output.flush();
 
@@ -204,37 +164,6 @@ public final class KryoUtil {
             byteArrayOutputStream.reset();
         }
     }
-
-    public static <T> byte[] writeObjectToByteArrayOpt2(T obj) {
-        UnsafeMemoryOutput output = unsafeMemOutputThreadLocal.get();
-        ByteArrayOutputStream byteArrayOutputStream = (ByteArrayOutputStream) output.getOutputStream();
-        try {
-            Kryo kryo = getInstance();
-            kryo.writeObject(output, obj);
-            output.flush();
-
-            return byteArrayOutputStream.toByteArray();
-        } finally {
-            output.clear();
-            byteArrayOutputStream.reset();
-        }
-    }
-
-    public static <T> byte[] writeObjectToByteArrayOpt3(T obj) {
-        UnsafeOutput output = unsafeOutputThreadLocal.get();
-        ByteArrayOutputStream byteArrayOutputStream = (ByteArrayOutputStream) output.getOutputStream();
-        try {
-            Kryo kryo = getInstance();
-            kryo.writeObject(output, obj);
-            output.flush();
-
-            return byteArrayOutputStream.toByteArray();
-        } finally {
-            output.clear();
-            byteArrayOutputStream.reset();
-        }
-    }
-
 
     /**
      * 将字节数组反序列化为原对象
@@ -249,7 +178,7 @@ public final class KryoUtil {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArray);
         Input input = new Input(byteArrayInputStream);
 
-        Kryo kryo = getInstance();
+        Kryo kryo = getKryoInstance();
         return kryo.readObject(input, clazz);
     }
 
@@ -260,39 +189,11 @@ public final class KryoUtil {
         input.setInputStream(byteArrayInputStream);
 
         try {
-            Kryo kryo = getInstance();
+            Kryo kryo = getKryoInstance();
             return kryo.readObject(input, clazz);
         } finally {
             input.rewind();
             input.adjustChars();
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> T readObjectFromByteArrayOpt2(byte[] byteArray, Class<T> clazz) {
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArray);
-        UnsafeMemoryInput input = unsafeMemInputThreadLocal.get();
-        input.setInputStream(byteArrayInputStream);
-
-        try {
-            Kryo kryo = getInstance();
-            return kryo.readObject(input, clazz);
-        } finally {
-            input.rewind();
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> T readObjectFromByteArrayOpt3(byte[] byteArray, Class<T> clazz) {
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArray);
-        UnsafeInput input = unsafeInputThreadLocal.get();
-        input.setInputStream(byteArrayInputStream);
-
-        try {
-            Kryo kryo = getInstance();
-            return kryo.readObject(input, clazz);
-        } finally {
-            input.rewind();
         }
     }
 }

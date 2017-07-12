@@ -402,8 +402,8 @@ public class WorkExperience implements Serializable {
         result.setUpdateTime(new Date());
 //
 //        List<Person> personList = new ArrayList<>(2);
-//        personList.add(Person.getInstance(id + 1));
-//        personList.add(Person.getInstance(id + 11));
+//        personList.add(Person.getKryoInstance(id + 1));
+//        personList.add(Person.getKryoInstance(id + 11));
 //        result.setPersonList(personList);
 
         return result;

@@ -38,7 +38,8 @@ public class EhcacheWithKryo {
             .withSizeOfMaxObjectGraph(1000)
             .withExpiry(Expirations.timeToLiveExpiration(Duration.of(5, TimeUnit.MINUTES)))
             .add(cacheEventListenerConfBuilder)
-            .withValueSerializer(new BZPSerializer<WorkExperience>())
+            .withValueSerializer(new BZPCompressSerializer<>())
+            .withValueCopier(new BZPCopier<>())
             .build();
 
     private final Cache<Long, WorkExperience> cache = cacheManager.createCache("GeekWorkExp", cacheConf);

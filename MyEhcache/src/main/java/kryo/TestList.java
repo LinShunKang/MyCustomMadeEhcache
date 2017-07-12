@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 public class TestList {
 
     public static void main(String[] args) {
-        Kryo kryo = KryoUtil.getInstance();
+        Kryo kryo = KryoUtil.getKryoInstance();
 
 
 //
@@ -59,7 +59,7 @@ public class TestList {
 
     private static void testDirectCopy(List<WorkExperience> list, int times) {
         long startTime = System.currentTimeMillis();
-        Kryo kryo = KryoUtil.getInstance();
+        Kryo kryo = KryoUtil.getKryoInstance();
         int totalSize = 0;
         for (int i = 0; i < times; ++i) {
             List<WorkExperience> listCopy = kryo.copy(list);
