@@ -10,7 +10,7 @@ public class BZPCopier<T> implements Copier<T> {
 
     @Override
     public T copyForRead(T obj) {
-        System.out.println("BZPCopier.copyForRead(" + obj + ")");
+//        System.out.println("BZPCopier.copyForRead(" + obj + ")");
         if (isImmutableObj(obj)) {
             return obj;
         }
@@ -28,7 +28,7 @@ public class BZPCopier<T> implements Copier<T> {
 
     @Override
     public T copyForWrite(T obj) {
-        System.out.println("BZPCopier.copyForWrite(" + obj + ")");
+//        System.out.println("BZPCopier.copyForWrite(" + obj + ")");
         if (isImmutableObj(obj)) {
             return obj;
         }

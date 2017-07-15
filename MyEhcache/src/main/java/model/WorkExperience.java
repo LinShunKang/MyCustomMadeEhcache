@@ -408,4 +408,10 @@ public class WorkExperience implements Serializable {
 
         return result;
     }
+
+    public static WorkExperience getIntance(long userId, long id) {
+        WorkExperience result = getIntance(id);
+        result.setUserId(userId);
+        return result;
+    }
 }

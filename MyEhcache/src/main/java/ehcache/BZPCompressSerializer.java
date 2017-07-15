@@ -15,7 +15,7 @@ public class BZPCompressSerializer<T> implements Serializer<T> {
 
     @Override
     public ByteBuffer serialize(Object o) throws SerializerException {
-        System.out.println("BZPCompressSerializer.serialize(" + o + ")");
+//        System.out.println("BZPCompressSerializer.serialize(" + o + ")");
 
         byte[] bytes = KryoUtil.writeToByteArrayOpt(o);
         try {
@@ -34,7 +34,7 @@ public class BZPCompressSerializer<T> implements Serializer<T> {
         try {
             byte[] uncompressBytes = Snappy.uncompress(bytes);
             T result =  KryoUtil.readFromByteArrayOpt(uncompressBytes);
-            System.out.println("BZPCompressSerializer.read(" + result + ")");
+//            System.out.println("BZPCompressSerializer.read(" + result + ")");
             return result;
         } catch (IOException e) {
             e.printStackTrace();

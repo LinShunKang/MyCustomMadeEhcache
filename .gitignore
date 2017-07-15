@@ -9,4 +9,5 @@ target
 .DS_Store
 ~/
 /logs
-.idea/workspace.xml
+.idea/*.xml
+/.idea/workspace.xml
