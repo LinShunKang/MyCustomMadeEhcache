@@ -14,51 +14,70 @@ import org.ehcache.spi.copy.Copier;
 import org.ehcache.spi.serialization.Serializer;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by LinShunkang on 7/15/17.
  */
 public final class EhcacheBuilder<K, V> {
 
+    private static final String DEFAULT_CACHE_NAME_PREFIX = "Ehcache_";
+
+    private static final AtomicInteger DEFAULT_CACHE_NAMEP_SUFFIX = new AtomicInteger(0);
+
+    private static final Expiry DEFAULT_TTL_EXPIRY = Expirations.timeToLiveExpiration(Duration.of(1, TimeUnit.HOURS));
+
+    private static final Copier DEFAULT_KEY_COPIER = new BZPCopier();
+
+    private static final Copier DEFAULT_VALUE_COPIER = new BZPCopier();
+
+    private static final Serializer DEFAULT_KEY_SERIALIZER = new BZPSerializer();
+
+    private static final Serializer DEFAULT_VALUE_SERIALIZER = new BZPSerializer();
+
     private ResourcePoolsBuilder resourcePoolsBuilder = ResourcePoolsBuilder.newResourcePoolsBuilder();
 
-    private Class<K> keyClass;
+    private String cacheName;
 
-    private Class<V> valueClass;
+    private Class keyClass;
 
-    private Expiry<? super K, ? super V> ttlExpiry;
+    private Class valueClass;
 
-    private Copier<K> keyCopier;
+    private Expiry ttlExpiry = DEFAULT_TTL_EXPIRY;
 
-    private Copier<V> valueCopier;
+    private Copier keyCopier = DEFAULT_KEY_COPIER;
 
-    private Serializer<K> keySerializer;
+    private Copier valueCopier = DEFAULT_VALUE_COPIER;
 
-    private Serializer<V> valueSerializer;
+    private Serializer keySerializer = DEFAULT_KEY_SERIALIZER;
+
+    private Serializer valueSerializer = DEFAULT_VALUE_SERIALIZER;
 
     private EhcacheBuilder(Class<K> keyClass, Class<V> valueClass) {
         this.keyClass = keyClass;
         this.valueClass = valueClass;
     }
 
-    private EhcacheBuilder() {
-    }
-
     public static EhcacheBuilder<Object, Object> newBuilder(Class keyClass, Class valueClass) {
         return new EhcacheBuilder<>(keyClass, valueClass);
     }
 
-    public static EhcacheBuilder<Object, Object> newBuilder() {
-        return new EhcacheBuilder<>();
+    public EhcacheBuilder<K, V> cacheName(String cacheName) {
+        this.cacheName = cacheName;
+        return this;
+    }
+
+    public String getCacheName() {
+        return cacheName != null ? cacheName : DEFAULT_CACHE_NAME_PREFIX + DEFAULT_CACHE_NAMEP_SUFFIX.getAndIncrement();
     }
 
     public EhcacheBuilder<K, V> heap(long heapSize, MemoryUnit heapUnit) {
-        resourcePoolsBuilder.heap(heapSize, heapUnit);
+        resourcePoolsBuilder = resourcePoolsBuilder.heap(heapSize, heapUnit);
         return this;
     }
 
     public EhcacheBuilder<K, V> offHeap(long offHeapSize, MemoryUnit offHeapUnit) {
-        resourcePoolsBuilder.offheap(offHeapSize, offHeapUnit);
+        resourcePoolsBuilder = resourcePoolsBuilder.offheap(offHeapSize, offHeapUnit);
         return this;
     }
 
@@ -88,7 +107,7 @@ public final class EhcacheBuilder<K, V> {
         return this;
     }
 
-    public EhcacheBuilder compress(boolean compress) {
+    public EhcacheBuilder<K, V> compress(boolean compress) {
         if (compress) {
             keySerializer = new BZPCompressSerializer<>();
             valueSerializer = new BZPCompressSerializer<>();
@@ -99,9 +118,9 @@ public final class EhcacheBuilder<K, V> {
         return this;
     }
 
-    //        public <K1 extends K, V1 extends V> Cache<K, V> build(Class<K> keyClass, Class<V> valueClass) {
-    public <K1 extends K, V1 extends V> Cache<K, V> build() {
-        CacheConfiguration<K, V> cacheConfiguration = CacheConfigurationBuilder.newCacheConfigurationBuilder(keyClass, valueClass, resourcePoolsBuilder)
+    @SuppressWarnings("unchecked")
+    public <K1 extends K, V1 extends V> Cache<K1, V1> build() {
+        CacheConfiguration<K1, V1> cacheConfiguration = CacheConfigurationBuilder.newCacheConfigurationBuilder(keyClass, valueClass, resourcePoolsBuilder)
                 .withSizeOfMaxObjectGraph(1000)
                 .withSizeOfMaxObjectSize(20, MemoryUnit.KB)
                 .withExpiry(ttlExpiry)
@@ -110,7 +129,8 @@ public final class EhcacheBuilder<K, V> {
                 .withValueCopier(valueCopier)
                 .withKeyCopier(keyCopier)
                 .build();
+
         CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
-        return cacheManager.createCache("GeekWorkExp", cacheConfiguration);
+        return cacheManager.createCache(getCacheName(), cacheConfiguration);
     }
 }

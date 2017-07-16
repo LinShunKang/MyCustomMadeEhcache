@@ -65,7 +65,13 @@ public class EhcacheWithKryo {
     }
 
     private static void testTieredCache(int testSize, long times) {
-        Cache<Long, List> cache = EhcacheBuilder.newBuilder().compress(true).heap(64, MemoryUnit.MB).offHeap(256, MemoryUnit.MB).expireAfterAccess(5, TimeUnit.MINUTES).build(Long.class, List.class);
+        Cache<Long, List> cache = EhcacheBuilder.newBuilder(Long.class, List.class)
+                .cacheName("GeekWorkExp")
+                .compress(true)
+                .heap(64, MemoryUnit.MB)
+                .offHeap(256, MemoryUnit.MB)
+                .expireAfterAccess(5, TimeUnit.MINUTES)
+                .build();
 
         for (long i = 0L; i < testSize; ++i) {
             cache.put(i, getList(i + 1, i));

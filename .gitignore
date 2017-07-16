@@ -11,3 +11,4 @@ target
 /logs
 .idea/*.xml
 /.idea/workspace.xml
+/.idea/
