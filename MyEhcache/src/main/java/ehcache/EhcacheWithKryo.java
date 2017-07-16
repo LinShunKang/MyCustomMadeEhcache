@@ -13,30 +13,20 @@ import java.util.concurrent.TimeUnit;
  */
 public class EhcacheWithKryo {
 
-    public static void main(String[] args) {
-//        test1(2000);
-        testTieredCompressCache(10000, 100);
-        testTieredCache(10000, 100);
+    public static void main(String[] args) throws InterruptedException {
+//        testTiredCache();
+        testOffHeapVSTiredCache();
     }
 
-    private static void test1(long times) {
-//        Cache<Long, List> cache = EhcacheUtils.getCache(Long.class, List.class, 64L, 256L);
-//        for (long i = 0L; i < times; ++i) {
-//            cache.put(i, getList(i + 1, i));
-//        }
-//
-//        System.out.println("first times read:--------------------------------");
-//        for (long i = 0L; i < times; ++i) {
-////            System.out.println(i + ":" + cache.get(i));
-//            cache.get(i);
-//        }
-//
-//        System.out.println("second times read:--------------------------------");
-//
-//        for (long i = 0L; i < times; ++i) {
-//            cache.get(i);
-//        }
+    private static void testTiredCache() throws InterruptedException {
+        testTieredCompressCache(10000, 100);
+//        testTieredCache(10000, 100);
 
+        System.gc();
+        TimeUnit.SECONDS.sleep(3);
+
+        testTieredCache(10000, 100);
+//        testTieredCompressCache(10000, 100);
     }
 
     private static List<WorkExperience> getList(long userId, long minId) {
@@ -48,44 +38,72 @@ public class EhcacheWithKryo {
     }
 
     private static void testTieredCompressCache(int testSize, long times) {
-//        Cache<Long, List> cache = EhcacheUtils.getCache(Long.class, List.class, 64L, 256L);
-//        for (long i = 0L; i < testSize; ++i) {
-//            cache.put(i, getList(i + 1, i));
-//        }
-//
-//        long startTime = System.currentTimeMillis();
-//        long totalSize = 0L;
-//        for (int k = 0; k < times; ++k) {
-//            for (long i = 0L; i < testSize; ++i) {
-//                totalSize += cache.get(i).size();
-//            }
-//        }
-//
-//        System.out.println("testTieredCompressCache(" + testSize + ", " + times + "): totalSize=" + totalSize + ", " + (System.currentTimeMillis() - startTime) + "ms");
-    }
-
-    private static void testTieredCache(int testSize, long times) {
-        Cache<Long, List> cache = EhcacheBuilder.newBuilder(Long.class, List.class)
+        Cache<Long, List<WorkExperience>> cache = EhcacheBuilder.newBuilder(Long.class, List.class)
                 .cacheName("GeekWorkExp")
                 .compress(true)
                 .heap(64, MemoryUnit.MB)
                 .offHeap(256, MemoryUnit.MB)
-                .expireAfterAccess(5, TimeUnit.MINUTES)
+                .expireAfterWrite(5, TimeUnit.MINUTES)
                 .build();
 
+        testCachePerformance(cache, "testTieredCompressCache", testSize, times);
+    }
+
+    private static void testCachePerformance(Cache<Long, List<WorkExperience>> cache, String cacheName, int testSize, long times) {
+        long startTime = System.currentTimeMillis();
         for (long i = 0L; i < testSize; ++i) {
             cache.put(i, getList(i + 1, i));
         }
 
-        long startTime = System.currentTimeMillis();
         long totalSize = 0L;
         for (int k = 0; k < times; ++k) {
-            for (long i = 0L; i < testSize; ++i) {
-                totalSize += cache.get(i).size();
+            for (long i = 0L; i < testSize / 2; ++i) {
+                List<WorkExperience> workExperiences = cache.get(i);
+                if (workExperiences != null) {
+                    totalSize += workExperiences.size();
+                }
             }
         }
 
-        System.out.println("testTieredCache(" + testSize + ", " + times + "): totalSize=" + totalSize + ", " + (System.currentTimeMillis() - startTime) + "ms");
+        System.out.println("testCachePerformance(" + cacheName + ", " + testSize + ", " + times + "): totalSize=" + totalSize + ", " + (System.currentTimeMillis() - startTime) + "ms");
     }
+
+    private static void testTieredCache(int testSize, long times) {
+        Cache<Long, List<WorkExperience>> cache = EhcacheBuilder.newBuilder(Long.class, List.class)
+                .cacheName("GeekWorkExp")
+                .compress(false)
+                .heap(64, MemoryUnit.MB)
+                .offHeap(256, MemoryUnit.MB)
+                .expireAfterWrite(5, TimeUnit.MINUTES)
+                .build();
+
+        testCachePerformance(cache, "testTieredCache", testSize, times);
+    }
+
+    private static void testOffHeapVSTiredCache() throws InterruptedException {
+        int testSize = 10000;
+        int times = 10000;
+        testOffHeapCache(testSize, times);
+//        testTieredCache(testSize, 100);
+
+        System.gc();
+        TimeUnit.SECONDS.sleep(3);
+
+        testTieredCache(testSize, times);
+//        testOffHeapCache(testSize, 100);
+    }
+
+    private static void testOffHeapCache(int testSize, long times) {
+        Cache<Long, List<WorkExperience>> cache = EhcacheBuilder.newBuilder(Long.class, List.class)
+                .cacheName("GeekWorkExp")
+                .compress(false)
+                .heap(0, MemoryUnit.MB)
+                .offHeap(256, MemoryUnit.MB)
+                .expireAfterWrite(5, TimeUnit.MINUTES)
+                .build();
+
+        testCachePerformance(cache, "testOffHeapCache", testSize, times);
+    }
+
 
 }

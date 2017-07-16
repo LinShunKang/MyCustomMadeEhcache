@@ -5,7 +5,7 @@ target
 *.iml
 .springBeans
 .myumldata
-.idea/
+.idea/*
 .DS_Store
 ~/
 /logs

@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/MyCustomMadeEhcache.iml" filepath="$PROJECT_DIR$/MyCustomMadeEhcache.iml" />
       <module fileurl="file://$PROJECT_DIR$/MyEhcache/MyEhcache.iml" filepath="$PROJECT_DIR$/MyEhcache/MyEhcache.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ehcache.iml" filepath="$PROJECT_DIR$/ehcache.iml" />
     </modules>
   </component>
 </project>

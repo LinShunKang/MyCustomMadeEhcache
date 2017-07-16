@@ -23,17 +23,17 @@ public final class EhcacheBuilder<K, V> {
 
     private static final String DEFAULT_CACHE_NAME_PREFIX = "Ehcache_";
 
-    private static final AtomicInteger DEFAULT_CACHE_NAMEP_SUFFIX = new AtomicInteger(0);
+    private static final AtomicInteger DEFAULT_CACHE_NAME_SUFFIX = new AtomicInteger(0);
 
     private static final Expiry DEFAULT_TTL_EXPIRY = Expirations.timeToLiveExpiration(Duration.of(1, TimeUnit.HOURS));
 
-    private static final Copier DEFAULT_KEY_COPIER = new BZPCopier();
+    private static final Copier DEFAULT_KEY_COPIER = new KryoCopier();
 
-    private static final Copier DEFAULT_VALUE_COPIER = new BZPCopier();
+    private static final Copier DEFAULT_VALUE_COPIER = new KryoCopier();
 
-    private static final Serializer DEFAULT_KEY_SERIALIZER = new BZPSerializer();
+    private static final Serializer DEFAULT_KEY_SERIALIZER = new KryoSerializer();
 
-    private static final Serializer DEFAULT_VALUE_SERIALIZER = new BZPSerializer();
+    private static final Serializer DEFAULT_VALUE_SERIALIZER = new KryoSerializer();
 
     private ResourcePoolsBuilder resourcePoolsBuilder = ResourcePoolsBuilder.newResourcePoolsBuilder();
 
@@ -68,11 +68,13 @@ public final class EhcacheBuilder<K, V> {
     }
 
     public String getCacheName() {
-        return cacheName != null ? cacheName : DEFAULT_CACHE_NAME_PREFIX + DEFAULT_CACHE_NAMEP_SUFFIX.getAndIncrement();
+        return cacheName != null ? cacheName : DEFAULT_CACHE_NAME_PREFIX + DEFAULT_CACHE_NAME_SUFFIX.getAndIncrement();
     }
 
     public EhcacheBuilder<K, V> heap(long heapSize, MemoryUnit heapUnit) {
-        resourcePoolsBuilder = resourcePoolsBuilder.heap(heapSize, heapUnit);
+        if (heapSize > 0L) {
+            resourcePoolsBuilder = resourcePoolsBuilder.heap(heapSize, heapUnit);
+        }
         return this;
     }
 
@@ -82,7 +84,7 @@ public final class EhcacheBuilder<K, V> {
     }
 
     @SuppressWarnings("unchecked")
-    public EhcacheBuilder<K, V> expireAfterAccess(long duration, TimeUnit durationUnit) {
+    public EhcacheBuilder<K, V> expireAfterWrite(long duration, TimeUnit durationUnit) {
         this.ttlExpiry = Expirations.timeToLiveExpiration(Duration.of(duration, durationUnit));
         return this;
     }
@@ -109,11 +111,11 @@ public final class EhcacheBuilder<K, V> {
 
     public EhcacheBuilder<K, V> compress(boolean compress) {
         if (compress) {
-            keySerializer = new BZPCompressSerializer<>();
-            valueSerializer = new BZPCompressSerializer<>();
+            keySerializer = new KryoCompressSerializer<>();
+            valueSerializer = new KryoCompressSerializer<>();
         } else {
-            keySerializer = new BZPSerializer<>();
-            valueSerializer = new BZPSerializer<>();
+            keySerializer = new KryoSerializer<>();
+            valueSerializer = new KryoSerializer<>();
         }
         return this;
     }

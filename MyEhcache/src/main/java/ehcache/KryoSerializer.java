@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 /**
  * Created by LinShunkang on 7/10/17.
  */
-public class BZPSerializer<T> implements Serializer<T> {
+public class KryoSerializer<T> implements Serializer<T> {
 
     @Override
     public ByteBuffer serialize(Object o) throws SerializerException {

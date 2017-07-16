@@ -11,11 +11,11 @@ import java.nio.ByteBuffer;
 /**
  * Created by LinShunkang on 7/10/17.
  */
-public class BZPCompressSerializer<T> implements Serializer<T> {
+public class KryoCompressSerializer<T> implements Serializer<T> {
 
     @Override
     public ByteBuffer serialize(Object o) throws SerializerException {
-//        System.out.println("BZPCompressSerializer.serialize(" + o + ")");
+//        System.out.println("KryoCompressSerializer.serialize(" + o + ")");
 
         byte[] bytes = KryoUtil.writeToByteArrayOpt(o);
         try {
@@ -32,9 +32,9 @@ public class BZPCompressSerializer<T> implements Serializer<T> {
         byte[] bytes = new byte[byteBuffer.remaining()];
         byteBuffer.get(bytes);
         try {
-            byte[] uncompressBytes = Snappy.uncompress(bytes);
-            T result =  KryoUtil.readFromByteArrayOpt(uncompressBytes);
-//            System.out.println("BZPCompressSerializer.read(" + result + ")");
+            byte[] srcBytes = Snappy.uncompress(bytes);
+            T result = KryoUtil.readFromByteArrayOpt(srcBytes);
+//            System.out.println("KryoCompressSerializer.read(" + result + ")");
             return result;
         } catch (IOException e) {
             e.printStackTrace();

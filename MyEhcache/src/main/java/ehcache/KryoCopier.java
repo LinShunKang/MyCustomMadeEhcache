@@ -6,7 +6,7 @@ import org.ehcache.spi.copy.Copier;
 /**
  * Created by LinShunkang on 7/12/17.
  */
-public class BZPCopier<T> implements Copier<T> {
+public class KryoCopier<T> implements Copier<T> {
 
     @Override
     public T copyForRead(T obj) {
@@ -28,7 +28,7 @@ public class BZPCopier<T> implements Copier<T> {
 
     @Override
     public T copyForWrite(T obj) {
-//        System.out.println("BZPCopier.copyForWrite(" + obj + ")");
+        System.out.println("KryoCopier.copyForWrite(" + obj + ")");
         if (isImmutableObj(obj)) {
             return obj;
         }
