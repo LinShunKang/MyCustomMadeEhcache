@@ -12,3 +12,4 @@ target
 .idea/*.xml
 /.idea/workspace.xml
 /.idea/
+MyEhcache/src/main/resources/
