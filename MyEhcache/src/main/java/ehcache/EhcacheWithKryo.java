@@ -70,7 +70,7 @@ public class EhcacheWithKryo {
 
     private static void testTieredCache(int testSize, long times) {
         Cache<Long, List<WorkExperience>> cache = EhcacheBuilder.newBuilder(Long.class, List.class)
-                .cacheName("GeekWorkExp")
+                .cacheName("GeekWorkExp2")
                 .compress(false)
                 .heap(64, MemoryUnit.MB)
                 .offHeap(256, MemoryUnit.MB)
@@ -95,7 +95,7 @@ public class EhcacheWithKryo {
 
     private static void testOffHeapCache(int testSize, long times) {
         Cache<Long, List<WorkExperience>> cache = EhcacheBuilder.newBuilder(Long.class, List.class)
-                .cacheName("GeekWorkExp")
+                .cacheName("GeekWorkExp3")
                 .compress(false)
                 .heap(0, MemoryUnit.MB)
                 .offHeap(256, MemoryUnit.MB)
@@ -104,6 +104,5 @@ public class EhcacheWithKryo {
 
         testCachePerformance(cache, "testOffHeapCache", testSize, times);
     }
-
 
 }

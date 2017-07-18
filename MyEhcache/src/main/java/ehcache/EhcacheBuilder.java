@@ -35,6 +35,20 @@ public final class EhcacheBuilder<K, V> {
 
     private static final Serializer DEFAULT_VALUE_SERIALIZER = new KryoSerializer();
 
+    private static final CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                try {
+                    cacheManager.close();
+                } finally {
+                    System.out.println("EhcacheBuilder: cacheManager.close()");
+                }
+            }
+        });
+    }
+
     private ResourcePoolsBuilder resourcePoolsBuilder = ResourcePoolsBuilder.newResourcePoolsBuilder();
 
     private String cacheName;
@@ -132,7 +146,7 @@ public final class EhcacheBuilder<K, V> {
                 .withKeyCopier(keyCopier)
                 .build();
 
-        CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
         return cacheManager.createCache(getCacheName(), cacheConfiguration);
     }
+
 }
