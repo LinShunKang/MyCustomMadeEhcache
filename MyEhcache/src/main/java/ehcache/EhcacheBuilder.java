@@ -4,9 +4,12 @@ import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.CacheConfiguration;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.CacheEventListenerConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.ehcache.config.units.MemoryUnit;
+import org.ehcache.event.CacheEventListener;
+import org.ehcache.event.EventType;
 import org.ehcache.expiry.Duration;
 import org.ehcache.expiry.Expirations;
 import org.ehcache.expiry.Expiry;
@@ -66,6 +69,8 @@ public final class EhcacheBuilder<K, V> {
     private Serializer keySerializer = DEFAULT_KEY_SERIALIZER;
 
     private Serializer valueSerializer = DEFAULT_VALUE_SERIALIZER;
+
+    private CacheEventListenerConfigurationBuilder cacheEventListenerConfigurationBuilder;
 
     private EhcacheBuilder(Class<K> keyClass, Class<V> valueClass) {
         this.keyClass = keyClass;
@@ -134,18 +139,32 @@ public final class EhcacheBuilder<K, V> {
         return this;
     }
 
+    public EhcacheBuilder<K, V> cacheEventListener(CacheEventListener<?, ?> cacheEventListener, EventType eventType, EventType... eventTypes) {
+        this.cacheEventListenerConfigurationBuilder = CacheEventListenerConfigurationBuilder.newEventListenerConfiguration(
+                cacheEventListener,
+                eventType,
+                eventTypes)
+                .unordered()
+                .asynchronous();
+        return this;
+    }
+
     @SuppressWarnings("unchecked")
     public <K1 extends K, V1 extends V> Cache<K1, V1> build() {
-        CacheConfiguration<K1, V1> cacheConfiguration = CacheConfigurationBuilder.newCacheConfigurationBuilder(keyClass, valueClass, resourcePoolsBuilder)
-                .withSizeOfMaxObjectGraph(1000)
-                .withSizeOfMaxObjectSize(20, MemoryUnit.KB)
+        CacheConfigurationBuilder configurationBuilder = CacheConfigurationBuilder.newCacheConfigurationBuilder(keyClass, valueClass, resourcePoolsBuilder)
+                .withSizeOfMaxObjectGraph(100)
+                .withSizeOfMaxObjectSize(50, MemoryUnit.KB)
                 .withExpiry(ttlExpiry)
                 .withKeySerializer(keySerializer)
                 .withValueSerializer(valueSerializer)
                 .withValueCopier(valueCopier)
-                .withKeyCopier(keyCopier)
-                .build();
+                .withKeyCopier(keyCopier);
 
+        if (cacheEventListenerConfigurationBuilder != null) {
+            configurationBuilder = configurationBuilder.add(cacheEventListenerConfigurationBuilder);
+        }
+
+        CacheConfiguration<K1, V1> cacheConfiguration = configurationBuilder.build();
         return cacheManager.createCache(getCacheName(), cacheConfiguration);
     }
 
