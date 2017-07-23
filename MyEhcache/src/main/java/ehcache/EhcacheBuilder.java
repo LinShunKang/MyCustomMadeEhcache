@@ -14,6 +14,7 @@ import org.ehcache.expiry.Duration;
 import org.ehcache.expiry.Expirations;
 import org.ehcache.expiry.Expiry;
 import org.ehcache.spi.copy.Copier;
+import org.ehcache.spi.loaderwriter.CacheLoaderWriter;
 import org.ehcache.spi.serialization.Serializer;
 
 import java.util.concurrent.TimeUnit;
@@ -72,12 +73,14 @@ public final class EhcacheBuilder<K, V> {
 
     private CacheEventListenerConfigurationBuilder cacheEventListenerConfigurationBuilder;
 
+    private CacheLoaderWriter cacheLoaderWriter;
+
     private EhcacheBuilder(Class<K> keyClass, Class<V> valueClass) {
         this.keyClass = keyClass;
         this.valueClass = valueClass;
     }
 
-    public static EhcacheBuilder<Object, Object> newBuilder(Class keyClass, Class valueClass) {
+    public static <K, V> EhcacheBuilder<K, V> newBuilder(Class<K> keyClass, Class<V> valueClass) {
         return new EhcacheBuilder<>(keyClass, valueClass);
     }
 
@@ -139,7 +142,7 @@ public final class EhcacheBuilder<K, V> {
         return this;
     }
 
-    public EhcacheBuilder<K, V> cacheEventListener(CacheEventListener<?, ?> cacheEventListener, EventType eventType, EventType... eventTypes) {
+    public EhcacheBuilder<K, V> cacheEventListener(CacheEventListener<K, V> cacheEventListener, EventType eventType, EventType... eventTypes) {
         this.cacheEventListenerConfigurationBuilder = CacheEventListenerConfigurationBuilder.newEventListenerConfiguration(
                 cacheEventListener,
                 eventType,
@@ -149,9 +152,14 @@ public final class EhcacheBuilder<K, V> {
         return this;
     }
 
+    public EhcacheBuilder<K, V> loaderWriter(CacheLoaderWriter<K, V> cacheLoaderWriter) {
+        this.cacheLoaderWriter = cacheLoaderWriter;
+        return this;
+    }
+
     @SuppressWarnings("unchecked")
     public <K1 extends K, V1 extends V> Cache<K1, V1> build() {
-        CacheConfigurationBuilder configurationBuilder = CacheConfigurationBuilder.newCacheConfigurationBuilder(keyClass, valueClass, resourcePoolsBuilder)
+        CacheConfigurationBuilder<K1, V1> configurationBuilder = CacheConfigurationBuilder.newCacheConfigurationBuilder(keyClass, valueClass, resourcePoolsBuilder)
                 .withSizeOfMaxObjectGraph(100)
                 .withSizeOfMaxObjectSize(50, MemoryUnit.KB)
                 .withExpiry(ttlExpiry)
@@ -162,6 +170,10 @@ public final class EhcacheBuilder<K, V> {
 
         if (cacheEventListenerConfigurationBuilder != null) {
             configurationBuilder = configurationBuilder.add(cacheEventListenerConfigurationBuilder);
+        }
+
+        if (cacheLoaderWriter != null) {
+            configurationBuilder = configurationBuilder.withLoaderWriter(cacheLoaderWriter);
         }
 
         CacheConfiguration<K1, V1> cacheConfiguration = configurationBuilder.build();

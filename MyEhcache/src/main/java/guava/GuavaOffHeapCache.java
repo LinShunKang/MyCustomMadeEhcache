@@ -24,7 +24,7 @@ import java.util.concurrent.*;
  */
 public class GuavaOffHeapCache<K, V> implements Cache<K, V> {
 
-    private Cache<K, ByteBuffer> byteBufferCache = CacheBuilder.newBuilder().concurrencyLevel(128).expireAfterWrite(1000, TimeUnit.MILLISECONDS).maximumSize(1500000).build();
+    private Cache<K, ByteBuffer> byteBufferCache = CacheBuilder.newBuilder().weakKeys().weakValues().concurrencyLevel(128).expireAfterWrite(1, TimeUnit.HOURS).maximumSize(1500000).build();
 
 
     @Nullable
