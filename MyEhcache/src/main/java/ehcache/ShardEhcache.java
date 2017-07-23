@@ -15,13 +15,13 @@ import java.util.Set;
  * 这个类是用来弥补ehcache本身不支持设置并发度而创建的，
  * get()方法在多线程下可以降低将近19%的响应时间。
  */
-public class Ehcache<K, V> implements Cache<K, V> {
+public class ShardEhcache<K, V> implements Cache<K, V> {
 
     private Cache<K, V>[] caches;
 
     private int mask;
 
-    public Ehcache(Cache<K, V>[] caches) {
+    public ShardEhcache(Cache<K, V>[] caches) {
         if (caches == null || caches.length <= 0 || !isPowerOfTwo(caches.length)) {
             throw new IllegalArgumentException("caches.length must be a power of two!!!");
         }

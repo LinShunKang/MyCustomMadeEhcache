@@ -201,11 +201,12 @@ public final class EhcacheBuilder<K, V> {
         if (shardNum == 1) {
             return cacheManager.createCache(getCacheName(), cacheConfiguration);
         } else {
-            Cache<K1, V1>[] caches = new Cache[shardNum];
+            String cacheName = getCacheName();
+            Cache<K1, V1>[] caches = new <K1, V1>Cache[shardNum];
             for (int i = 0; i < shardNum; ++i) {
-                caches[i] = cacheManager.createCache(getCacheName() + "_" + i, cacheConfiguration);
+                caches[i] = cacheManager.createCache(cacheName + "_" + i, cacheConfiguration);
             }
-            return new Ehcache<>(caches);
+            return new ShardEhcache<>(caches);
         }
     }
 
