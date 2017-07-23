@@ -2,7 +2,6 @@ package ehcache;
 
 import model.WorkExperience;
 import org.ehcache.Cache;
-import org.ehcache.config.units.MemoryUnit;
 import org.ehcache.event.EventType;
 
 import java.util.ArrayList;
@@ -21,7 +20,10 @@ public class EhcacheWithKryo {
 //        testTiredCache();
 //        testOffHeapVSTiredCache();
 //        testOffHeapCacheConcurrent(4, 1760000, 10);
-        testOffHeapCacheConcurrent(4, 1400000, 10);
+//        testOffHeapCacheConcurrent(4, 1400000, 10);
+//        testShardPerf(4, 140000, 10);
+        testShardPerf(10, 1400000, 2);
+
     }
 
     private static void testTiredCache() throws InterruptedException {
@@ -47,8 +49,8 @@ public class EhcacheWithKryo {
         Cache<Long, List<WorkExperience>> cache = EhcacheBuilder.newBuilder(Long.class, List.class)
                 .cacheName("GeekWorkExp")
                 .compress(true)
-                .heap(64, MemoryUnit.MB)
-                .offHeap(256, MemoryUnit.MB)
+                .heap(64)
+                .offHeap(256)
                 .expireAfterWrite(5, TimeUnit.MINUTES)
                 .build();
 
@@ -78,8 +80,8 @@ public class EhcacheWithKryo {
         Cache<Long, List<WorkExperience>> cache = EhcacheBuilder.newBuilder(Long.class, List.class)
                 .cacheName("GeekWorkExp2")
                 .compress(false)
-                .heap(64, MemoryUnit.MB)
-                .offHeap(256, MemoryUnit.MB)
+                .heap(64)
+                .offHeap(256)
                 .expireAfterWrite(5, TimeUnit.MINUTES)
                 .build();
 
@@ -103,8 +105,8 @@ public class EhcacheWithKryo {
         Cache<Long, List<WorkExperience>> cache = EhcacheBuilder.newBuilder(Long.class, List.class)
                 .cacheName("GeekWorkExp3")
                 .compress(false)
-                .heap(1, MemoryUnit.MB)
-                .offHeap(2, MemoryUnit.MB)
+                .heap(1)
+                .offHeap(2)
                 .expireAfterWrite(5, TimeUnit.MINUTES)
                 .build();
 
@@ -116,13 +118,16 @@ public class EhcacheWithKryo {
                 .cacheName("GeekWorkExp4")
 //                .compress(true)
                 .compress(false)
-                .heap(0, MemoryUnit.MB)
-//                .offHeap(3, MemoryUnit.GB)
-                .offHeap(2, MemoryUnit.MB)
+                .heap(0)
+                .offHeap(2)
                 .expireAfterWrite(10, TimeUnit.HOURS)
                 .cacheEventListener(new BZPCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
                 .build();
 
+        testConcurrent(cache, threadCount, testSize, times);
+    }
+
+    private static void testConcurrent(Cache<Long, List<WorkExperience>> cache, int threadCount, int testSize, long times) {
         long startTime = System.currentTimeMillis();
         System.out.println("<--------------------put start-------------------->");
         for (long i = 0L; i < testSize; ++i) {
@@ -163,5 +168,34 @@ public class EhcacheWithKryo {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    private static void testShardPerf(int threadCount, int testSize, long times) throws InterruptedException {
+        Cache<Long, List<WorkExperience>> cache1 = EhcacheBuilder.newBuilder(Long.class, List.class)
+                .cacheName("GeekWorkExp5")
+                .shardNum(1)
+                .compress(false)
+                .heap(0)
+                .offHeap(3 * 1024)
+                .expireAfterWrite(10, TimeUnit.HOURS)
+                .cacheEventListener(new BZPCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
+                .build();
+        testConcurrent(cache1, threadCount, testSize, times);
+//        testCachePerformance(cache1, "GeekWorkExp5", testSize, testSize);
+
+        System.gc();
+        TimeUnit.SECONDS.sleep(3);
+
+        Cache<Long, List<WorkExperience>> cache2 = EhcacheBuilder.newBuilder(Long.class, List.class)
+                .cacheName("GeekWorkExp6")
+                .shardNum(16)
+                .compress(false)
+                .heap(0)
+                .offHeap(3 * 1024)
+                .expireAfterWrite(10, TimeUnit.HOURS)
+                .cacheEventListener(new BZPCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
+                .build();
+        testConcurrent(cache2, threadCount, testSize, times);
+//        testCachePerformance(cache2, "GeekWorkExp5", testSize, testSize);
     }
 }

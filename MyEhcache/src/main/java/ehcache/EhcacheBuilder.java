@@ -25,7 +25,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public final class EhcacheBuilder<K, V> {
 
-    private static final String DEFAULT_CACHE_NAME_PREFIX = "Ehcache_";
+    private static final String DEFAULT_CACHE_NAME_PREFIX = "Ehcache-";
+
+    private static final int DEFAULT_CACHE_SHARD_NUM = 1;
+
+    private static final long DEFAULT_HEAP_SIZE = 0;
+
+    private static final long DEFAULT_OFF_HEAP_SIZE = 256;
 
     private static final AtomicInteger DEFAULT_CACHE_NAME_SUFFIX = new AtomicInteger(0);
 
@@ -53,9 +59,13 @@ public final class EhcacheBuilder<K, V> {
         });
     }
 
-    private ResourcePoolsBuilder resourcePoolsBuilder = ResourcePoolsBuilder.newResourcePoolsBuilder();
-
     private String cacheName;
+
+    private int shardNum = DEFAULT_CACHE_SHARD_NUM;
+
+    private long heapSize = DEFAULT_HEAP_SIZE;
+
+    private long offHeapSize = DEFAULT_OFF_HEAP_SIZE;
 
     private Class keyClass;
 
@@ -89,19 +99,30 @@ public final class EhcacheBuilder<K, V> {
         return this;
     }
 
+    public EhcacheBuilder<K, V> shardNum(int shardNum) {
+        this.shardNum = getMinShardNum(shardNum);
+        return this;
+    }
+
+    private int getMinShardNum(int shardNum) {
+        int number = 1;
+        while (number < shardNum) {
+            number = number << 1;
+        }
+        return number;
+    }
+
     public String getCacheName() {
         return cacheName != null ? cacheName : DEFAULT_CACHE_NAME_PREFIX + DEFAULT_CACHE_NAME_SUFFIX.getAndIncrement();
     }
 
-    public EhcacheBuilder<K, V> heap(long heapSize, MemoryUnit heapUnit) {
-        if (heapSize > 0L) {
-            resourcePoolsBuilder = resourcePoolsBuilder.heap(heapSize, heapUnit);
-        }
+    public EhcacheBuilder<K, V> heap(long heapSizeOfMB) {
+        this.heapSize = heapSizeOfMB;
         return this;
     }
 
-    public EhcacheBuilder<K, V> offHeap(long offHeapSize, MemoryUnit offHeapUnit) {
-        resourcePoolsBuilder = resourcePoolsBuilder.offheap(offHeapSize, offHeapUnit);
+    public EhcacheBuilder<K, V> offHeap(long offHeapSizeOfMB) {
+        this.offHeapSize = offHeapSizeOfMB;
         return this;
     }
 
@@ -159,7 +180,7 @@ public final class EhcacheBuilder<K, V> {
 
     @SuppressWarnings("unchecked")
     public <K1 extends K, V1 extends V> Cache<K1, V1> build() {
-        CacheConfigurationBuilder<K1, V1> configurationBuilder = CacheConfigurationBuilder.newCacheConfigurationBuilder(keyClass, valueClass, resourcePoolsBuilder)
+        CacheConfigurationBuilder<K1, V1> configurationBuilder = CacheConfigurationBuilder.newCacheConfigurationBuilder(keyClass, valueClass, getResourcePoolsBuilder())
                 .withSizeOfMaxObjectGraph(100)
                 .withSizeOfMaxObjectSize(50, MemoryUnit.KB)
                 .withExpiry(ttlExpiry)
@@ -177,7 +198,26 @@ public final class EhcacheBuilder<K, V> {
         }
 
         CacheConfiguration<K1, V1> cacheConfiguration = configurationBuilder.build();
-        return cacheManager.createCache(getCacheName(), cacheConfiguration);
+        if (shardNum == 1) {
+            return cacheManager.createCache(getCacheName(), cacheConfiguration);
+        } else {
+            Cache<K1, V1>[] caches = new Cache[shardNum];
+            for (int i = 0; i < shardNum; ++i) {
+                caches[i] = cacheManager.createCache(getCacheName() + "_" + i, cacheConfiguration);
+            }
+            return new Ehcache<>(caches);
+        }
     }
 
+    private ResourcePoolsBuilder getResourcePoolsBuilder() {
+        long heapSize = this.heapSize / shardNum;
+        ResourcePoolsBuilder builder = ResourcePoolsBuilder.newResourcePoolsBuilder();
+        if (heapSize > 0L) {
+            builder = builder.heap(heapSize, MemoryUnit.MB);
+        }
+
+        long offHeapSize = this.offHeapSize / shardNum;
+        offHeapSize = offHeapSize > 0L ? offHeapSize : 1L;
+        return builder.offheap(offHeapSize, MemoryUnit.MB);
+    }
 }
