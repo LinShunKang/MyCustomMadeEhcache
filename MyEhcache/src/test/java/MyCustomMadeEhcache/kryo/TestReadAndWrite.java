@@ -1,5 +1,6 @@
-package kryo;
+package MyCustomMadeEhcache.kryo;
 
+import kryo.KryoUtil;
 import model.WorkExperience;
 
 import java.util.List;

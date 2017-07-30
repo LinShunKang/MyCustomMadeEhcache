@@ -1,5 +1,7 @@
-package ehcache;
+package MyCustomMadeEhcache.ehcache;
 
+import ehcache.PrintCacheEventListener;
+import ehcache.EhcacheBuilder;
 import model.WorkExperience;
 import org.ehcache.Cache;
 import org.ehcache.event.EventType;
@@ -122,7 +124,7 @@ public class EhcacheWithKryo {
                 .heap(0)
                 .offHeap(2)
                 .expireAfterWrite(10, TimeUnit.HOURS)
-                .cacheEventListener(new BZPCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
+                .cacheEventListener(new PrintCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
                 .build();
 
         testConcurrent(cache, threadCount, testSize, times);
@@ -179,7 +181,7 @@ public class EhcacheWithKryo {
                 .heap(0)
                 .offHeap(3 * 1024)
                 .expireAfterWrite(10, TimeUnit.HOURS)
-                .cacheEventListener(new BZPCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
+                .cacheEventListener(new PrintCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
                 .build();
         testConcurrent(cache1, threadCount, testSize, times);
 //        testCachePerformance(cache1, "GeekWorkExp5", testSize, testSize);
@@ -194,7 +196,7 @@ public class EhcacheWithKryo {
                 .heap(0)
                 .offHeap(3 * 1024)
                 .expireAfterWrite(10, TimeUnit.HOURS)
-                .cacheEventListener(new BZPCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
+                .cacheEventListener(new PrintCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
                 .build();
         testConcurrent(cache2, threadCount, testSize, times);
 //        testCachePerformance(cache2, "GeekWorkExp5", testSize, testSize);
@@ -208,7 +210,7 @@ public class EhcacheWithKryo {
                 .heap(0)
                 .offHeap(256)
                 .expireAfterWrite(1, TimeUnit.HOURS)
-//                .cacheEventListener(new BZPCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
+//                .cacheEventListener(new PrintCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
                 .build();
 
         ThreadPoolExecutor putThreadPool = new ThreadPoolExecutor(putThreadCount, putThreadCount, 1, TimeUnit.DAYS, new LinkedBlockingQueue<>(1000), new ThreadPoolExecutor.CallerRunsPolicy());

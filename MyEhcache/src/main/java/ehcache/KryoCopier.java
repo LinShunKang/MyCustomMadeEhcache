@@ -10,7 +10,6 @@ public class KryoCopier<T> implements Copier<T> {
 
     @Override
     public T copyForRead(T obj) {
-//        System.out.println("BZPCopier.copyForRead(" + obj + ")");
         if (isImmutableObj(obj)) {
             return obj;
         }
@@ -28,7 +27,6 @@ public class KryoCopier<T> implements Copier<T> {
 
     @Override
     public T copyForWrite(T obj) {
-        System.out.println("KryoCopier.copyForWrite(" + obj + ")");
         if (isImmutableObj(obj)) {
             return obj;
         }

@@ -1,6 +1,7 @@
-package kryo;
+package MyCustomMadeEhcache.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
+import kryo.KryoUtil;
 import model.WorkExperience;
 
 import java.util.ArrayList;
@@ -54,7 +55,7 @@ public class TestList {
         System.gc();
         sleep(3000);
 
-        testSerilizedCopy(list, times);
+        testSerializedCopy(list, times);
     }
 
     private static void testDirectCopy(List<WorkExperience> list, int times) {
@@ -69,7 +70,7 @@ public class TestList {
     }
 
 
-    private static void testSerilizedCopy(List<WorkExperience> list, int times) {
+    private static void testSerializedCopy(List<WorkExperience> list, int times) {
         byte[] bytes = KryoUtil.writeObjectToByteArray(list);
 
         long startTime = System.currentTimeMillis();
@@ -78,6 +79,6 @@ public class TestList {
             List<WorkExperience> listCopy = KryoUtil.readObjectFromByteArray(bytes, list.getClass());
             totalSize += listCopy.size();
         }
-        System.out.println("testSerilizedCopy(" + list.size() + ", " + times + "): totalSize: " + totalSize + ", cost: " + (System.currentTimeMillis() - startTime) + "ms");
+        System.out.println("testSerializedCopy(" + list.size() + ", " + times + "): totalSize: " + totalSize + ", cost: " + (System.currentTimeMillis() - startTime) + "ms");
     }
 }

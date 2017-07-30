@@ -1,4 +1,4 @@
-package ehcache;
+package MyCustomMadeEhcache.ehcache;
 
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
