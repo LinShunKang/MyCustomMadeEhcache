@@ -202,7 +202,7 @@ public final class EhcacheBuilder<K, V> {
             return cacheManager.createCache(getCacheName(), cacheConfiguration);
         } else {
             String cacheName = getCacheName();
-            Cache<K1, V1>[] caches = new <K1, V1>Cache[shardNum];
+            Cache<K1, V1>[] caches = new Cache[shardNum];
             for (int i = 0; i < shardNum; ++i) {
                 caches[i] = cacheManager.createCache(cacheName + "_" + i, cacheConfiguration);
             }
