@@ -1,4 +1,4 @@
-package ehcache;
+package cache.ehcache;
 
 import kryo.KryoUtil;
 import org.ehcache.spi.copy.Copier;

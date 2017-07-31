@@ -1,4 +1,4 @@
-package model;
+package MyCustomMadeEhcache.model;
 
 import java.util.Date;
 

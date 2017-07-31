@@ -1,6 +1,6 @@
-package ehcache;
+package cache.ehcache;
 
-import org.ehcache.Cache;
+import cache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.CacheConfiguration;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
@@ -198,16 +198,12 @@ public final class EhcacheBuilder<K, V> {
         }
 
         CacheConfiguration<K1, V1> cacheConfiguration = configurationBuilder.build();
-        if (shardNum == 1) {
-            return cacheManager.createCache(getCacheName(), cacheConfiguration);
-        } else {
-            String cacheName = getCacheName();
-            Cache<K1, V1>[] caches = new Cache[shardNum];
-            for (int i = 0; i < shardNum; ++i) {
-                caches[i] = cacheManager.createCache(cacheName + "_" + i, cacheConfiguration);
-            }
-            return new ShardEhcache<>(caches);
+        String cacheName = getCacheName();
+        org.ehcache.Cache<K1, V1>[] caches = new org.ehcache.Cache[shardNum];
+        for (int i = 0; i < shardNum; ++i) {
+            caches[i] = cacheManager.createCache(cacheName + "_" + i, cacheConfiguration);
         }
+        return new ShardEhcache<>(caches);
     }
 
     private ResourcePoolsBuilder getResourcePoolsBuilder() {

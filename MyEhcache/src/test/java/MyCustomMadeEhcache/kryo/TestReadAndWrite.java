@@ -1,7 +1,7 @@
 package MyCustomMadeEhcache.kryo;
 
 import kryo.KryoUtil;
-import model.WorkExperience;
+import MyCustomMadeEhcache.model.WorkExperience;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;

@@ -2,7 +2,7 @@ package MyCustomMadeEhcache.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import kryo.KryoUtil;
-import model.WorkExperience;
+import MyCustomMadeEhcache.model.WorkExperience;
 
 import java.util.ArrayList;
 import java.util.List;

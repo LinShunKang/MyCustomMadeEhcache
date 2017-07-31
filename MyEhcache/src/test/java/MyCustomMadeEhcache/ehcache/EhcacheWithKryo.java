@@ -1,9 +1,9 @@
 package MyCustomMadeEhcache.ehcache;
 
-import ehcache.PrintCacheEventListener;
-import ehcache.EhcacheBuilder;
-import model.WorkExperience;
-import org.ehcache.Cache;
+import cache.Cache;
+import cache.ehcache.PrintCacheEventListener;
+import cache.ehcache.EhcacheBuilder;
+import MyCustomMadeEhcache.model.WorkExperience;
 import org.ehcache.event.EventType;
 
 import java.util.ArrayList;
@@ -23,10 +23,10 @@ public class EhcacheWithKryo {
 //        testOffHeapVSTiredCache();
 //        testOffHeapCacheConcurrent(4, 1760000, 10);
 //        testOffHeapCacheConcurrent(4, 1400000, 10);
-//        testShardPerf(4, 140000, 10);
+        testShardPerf(4, 140, 10);
 //        testShardPerf(10, 1400000, 2);
 
-        testAllTheTime(2, 10, 1000000);
+//        testAllTheTime(2, 10, 1000000);
     }
 
     private static void testTiredCache() throws InterruptedException {
@@ -155,7 +155,7 @@ public class EhcacheWithKryo {
                     }
                 }
                 countDownLatch.countDown();
-                System.out.println("thread: " + Thread.currentThread().getName() + ", totalSize:" + totalSize + ", cost:" + (System.currentTimeMillis() - startTime2) + "ms");
+                System.out.println("thread: " + Thread.currentThread().getName() + ", totalSize:" + totalSize + ", cost:" + (System.currentTimeMillis() - startTime2) + "ms, cache.stats(): " + cache.stats());
             });
         }
 
@@ -179,7 +179,7 @@ public class EhcacheWithKryo {
                 .shardNum(1)
                 .compress(false)
                 .heap(0)
-                .offHeap(3 * 1024)
+                .offHeap(2 * 1024)
                 .expireAfterWrite(10, TimeUnit.HOURS)
                 .cacheEventListener(new PrintCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
                 .build();
@@ -194,7 +194,7 @@ public class EhcacheWithKryo {
                 .shardNum(16)
                 .compress(false)
                 .heap(0)
-                .offHeap(3 * 1024)
+                .offHeap(2 * 1024)
                 .expireAfterWrite(10, TimeUnit.HOURS)
                 .cacheEventListener(new PrintCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
                 .build();

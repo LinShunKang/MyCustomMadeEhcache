@@ -1,27 +1,41 @@
-package ehcache;
+package cache.ehcache;
 
 import kryo.KryoUtil;
 import org.ehcache.spi.serialization.Serializer;
 import org.ehcache.spi.serialization.SerializerException;
+import org.xerial.snappy.Snappy;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
  * Created by LinShunkang on 7/10/17.
  */
-public class KryoSerializer<T> implements Serializer<T> {
+public class KryoCompressSerializer<T> implements Serializer<T> {
 
     @Override
     public ByteBuffer serialize(Object o) throws SerializerException {
         byte[] bytes = KryoUtil.writeToByteArrayOpt(o);
-        return ByteBuffer.wrap(bytes);
+        try {
+            byte[] compressBytes = Snappy.compress(bytes);
+            return ByteBuffer.wrap(compressBytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
     public T read(ByteBuffer byteBuffer) throws ClassNotFoundException, SerializerException {
         byte[] bytes = new byte[byteBuffer.remaining()];
         byteBuffer.get(bytes);
-        return KryoUtil.readFromByteArrayOpt(bytes);
+        try {
+            byte[] srcBytes = Snappy.uncompress(bytes);
+            return KryoUtil.readFromByteArrayOpt(srcBytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

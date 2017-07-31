@@ -1,4 +1,4 @@
-package ehcache;
+package cache.ehcache;
 
 import org.ehcache.event.CacheEvent;
 import org.ehcache.event.CacheEventListener;
@@ -10,6 +10,6 @@ public class PrintCacheEventListener<K, V> implements CacheEventListener<K, V> {
 
     @Override
     public void onEvent(CacheEvent cacheEvent) {
-        System.out.println("CacheEventListener: " + cacheEvent.getType() + ", " + cacheEvent.getKey());
+        System.out.println("PrintCacheEventListener: " + cacheEvent.getType() + ", " + cacheEvent.getKey());
     }
 }
