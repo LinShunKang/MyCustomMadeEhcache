@@ -33,8 +33,10 @@ public class MyInput extends Input {
     }
 
     public void adjustChars() {
-        if (chars.length > 2048) {
+        if (chars.length > 4096) {
             chars = new char[chars.length / 2];
+        } else if (chars.length > 2048) {
+            chars = new char[2048];
         } else if (chars.length > 1024) {
             chars = new char[1024];
         }

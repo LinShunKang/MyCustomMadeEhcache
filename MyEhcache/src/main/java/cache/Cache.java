@@ -5,6 +5,8 @@ import java.util.Set;
 
 public interface Cache<K, V> {
 
+    String getName();
+
     V get(K key);
 
     void put(K key, V value);

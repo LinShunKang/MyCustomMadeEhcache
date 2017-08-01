@@ -1,6 +1,9 @@
 package cache.ehcache;
 
 import cache.Cache;
+import cache.CacheStats;
+import cache.SimpleStatsCounter;
+import cache.StatsCounter;
 import org.ehcache.CacheManager;
 import org.ehcache.config.CacheConfiguration;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
@@ -45,6 +48,23 @@ public final class EhcacheBuilder<K, V> {
 
     private static final Serializer DEFAULT_VALUE_SERIALIZER = new KryoSerializer();
 
+    private static final StatsCounter DEFAULT_STATS_COUNTER = new StatsCounter() {
+        @Override
+        public void recordHits(int count) {
+            //empty
+        }
+
+        @Override
+        public void recordMisses(int count) {
+            //empty
+        }
+
+        @Override
+        public CacheStats getCacheStats() {
+            return CacheStats.getInstance(0, 0);
+        }
+    };
+
     private static final CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
 
     static {
@@ -84,6 +104,8 @@ public final class EhcacheBuilder<K, V> {
     private CacheEventListenerConfigurationBuilder cacheEventListenerConfigurationBuilder;
 
     private CacheLoaderWriter cacheLoaderWriter;
+
+    private StatsCounter statsCounter = DEFAULT_STATS_COUNTER;
 
     private EhcacheBuilder(Class<K> keyClass, Class<V> valueClass) {
         this.keyClass = keyClass;
@@ -173,6 +195,11 @@ public final class EhcacheBuilder<K, V> {
         return this;
     }
 
+    public EhcacheBuilder<K, V> recordStats() {
+        statsCounter = SimpleStatsCounter.getInstance();
+        return this;
+    }
+
     public EhcacheBuilder<K, V> loaderWriter(CacheLoaderWriter<K, V> cacheLoaderWriter) {
         this.cacheLoaderWriter = cacheLoaderWriter;
         return this;
@@ -203,7 +230,7 @@ public final class EhcacheBuilder<K, V> {
         for (int i = 0; i < shardNum; ++i) {
             caches[i] = cacheManager.createCache(cacheName + "_" + i, cacheConfiguration);
         }
-        return new ShardEhcache<>(caches);
+        return new ShardEhcache<>(caches, cacheName, statsCounter);
     }
 
     private ResourcePoolsBuilder getResourcePoolsBuilder() {

@@ -14,20 +14,23 @@ import java.util.Set;
  */
 public class ShardEhcache<K, V> implements Cache<K, V> {
 
-    private org.ehcache.Cache<K, V>[] caches;
+    private final org.ehcache.Cache<K, V>[] caches;
 
-    private int mask;
+    private final int mask;
 
-    private StatsCounter statsCounter;
+    private final String name;
 
-    public ShardEhcache(org.ehcache.Cache<K, V>[] caches) {
+    private final StatsCounter statsCounter;
+
+    public ShardEhcache(org.ehcache.Cache<K, V>[] caches, String name, StatsCounter statsCounter) {
         if (caches == null || caches.length <= 0 || !isPowerOfTwo(caches.length)) {
             throw new IllegalArgumentException("caches.length must be a power of two!!!");
         }
 
         this.caches = caches;
         this.mask = caches.length - 1;
-        this.statsCounter = StatsCounter.getInstance();
+        this.name = name;
+        this.statsCounter = statsCounter;
     }
 
     private boolean isPowerOfTwo(int num) {
@@ -44,15 +47,24 @@ public class ShardEhcache<K, V> implements Cache<K, V> {
     }
 
     @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
     public V get(K key) {
         org.ehcache.Cache<K, V> cache = getCache(key);
         V result = cache.get(key);
-        if (result != null) {
+        record(result);
+        return result;
+    }
+
+    private void record(V value) {
+        if (value != null) {
             statsCounter.recordHits(1);
         } else {
             statsCounter.recordMisses(1);
         }
-        return result;
     }
 
     @Override

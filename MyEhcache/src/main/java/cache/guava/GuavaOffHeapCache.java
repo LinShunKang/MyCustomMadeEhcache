@@ -20,8 +20,12 @@ import java.util.concurrent.*;
  */
 public class GuavaOffHeapCache<K, V> implements Cache<K, V> {
 
-    private com.google.common.cache.Cache<K, ByteBuffer> byteBufferCache = CacheBuilder.newBuilder().weakKeys().weakValues().concurrencyLevel(128).expireAfterWrite(1, TimeUnit.HOURS).maximumSize(1500000).build();
+    private com.google.common.cache.Cache<K, ByteBuffer> byteBufferCache = CacheBuilder.newBuilder().weakKeys().weakValues().concurrencyLevel(128).expireAfterWrite(1, TimeUnit.HOURS).recordStats().maximumSize(1500000).build();
 
+    @Override
+    public String getName() {
+        return null;
+    }
 
     @Override
     public void put(K key, V value) {
