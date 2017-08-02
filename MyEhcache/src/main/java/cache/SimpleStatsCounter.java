@@ -1,26 +1,26 @@
 package cache;
 
-import java.util.concurrent.atomic.AtomicLong;
+import org.terracotta.statistics.jsr166e.LongAdder;
 
 public class SimpleStatsCounter implements StatsCounter {
 
-    private AtomicLong hitCount = new AtomicLong(0L);
+    private LongAdder hitCount = new LongAdder();
 
-    private AtomicLong missCount = new AtomicLong(0L);
+    private LongAdder missCount = new LongAdder();
 
     private SimpleStatsCounter() {
     }
 
     public void recordHits(int count) {
-        hitCount.addAndGet(count);
+        hitCount.add(count);
     }
 
     public void recordMisses(int count) {
-        missCount.addAndGet(count);
+        missCount.add(count);
     }
 
     public CacheStats getCacheStats() {
-        return CacheStats.getInstance(hitCount.get(), missCount.get());
+        return CacheStats.getInstance(hitCount.sum(), missCount.sum());
     }
 
     public static SimpleStatsCounter getInstance() {

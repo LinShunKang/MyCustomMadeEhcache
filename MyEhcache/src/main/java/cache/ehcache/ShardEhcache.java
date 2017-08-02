@@ -9,8 +9,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 这个类是用来弥补ehcache本身不支持设置并发度而创建的，
- * get()方法在多线程下可以降低将近19%的响应时间。
+ * 该类通过对ehcache的简单封装，实现了以下特性：
+ * 1、通过支持分片，提升并发性能
+ * 2、通过StatsCounter，支持缓存命中计数
  */
 public class ShardEhcache<K, V> implements Cache<K, V> {
 
