@@ -23,10 +23,10 @@ public class EhcacheWithKryo {
 //        testOffHeapVSTiredCache();
 //        testOffHeapCacheConcurrent(4, 1760000, 10);
 //        testOffHeapCacheConcurrent(4, 1400000, 10);
-        testShardPerf(4, 140, 10);
+//        testShardPerf(4, 140, 10);
 //        testShardPerf(10, 1400000, 2);
 
-//        testAllTheTime(2, 10, 1000000);
+        testAllTheTime(2, 10, 10000);
     }
 
     private static void testTiredCache() throws InterruptedException {
@@ -216,21 +216,21 @@ public class EhcacheWithKryo {
         ThreadPoolExecutor putThreadPool = new ThreadPoolExecutor(putThreadCount, putThreadCount, 1, TimeUnit.DAYS, new LinkedBlockingQueue<>(1000), new ThreadPoolExecutor.CallerRunsPolicy());
         ThreadPoolExecutor getThreadPool = new ThreadPoolExecutor(getThreadCount, getThreadCount, 1, TimeUnit.DAYS, new LinkedBlockingQueue<>(1000), new ThreadPoolExecutor.CallerRunsPolicy());
 
-        for (int i = 0; i < putThreadCount; ++i) {
-            putThreadPool.execute(new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println("putThread:" + Thread.currentThread().getName() + " start!!!");
-                    for (long i = 0; i < Long.MAX_VALUE; ++i) {
-                        long key = i % testSize;
-                        if (key / 1000 == 0) {
-                            cache.put(key, getList(key, key + 1));
-                        }
-                    }
-                    System.out.println("putThread:" + Thread.currentThread().getName() + " end!!!");
-                }
-            });
-        }
+//        for (int i = 0; i < putThreadCount; ++i) {
+//            putThreadPool.execute(new Runnable() {
+//                @Override
+//                public void run() {
+//                    System.out.println("putThread:" + Thread.currentThread().getName() + " start!!!");
+//                    for (long i = 0; i < Long.MAX_VALUE; ++i) {
+//                        long key = i % testSize;
+//                        if (key / 1000 == 0) {
+//                            cache.put(key, getList(key, key + 1));
+//                        }
+//                    }
+//                    System.out.println("putThread:" + Thread.currentThread().getName() + " end!!!");
+//                }
+//            });
+//        }
 
         for (int i = 0; i < getThreadCount; ++i) {
             getThreadPool.execute(new Runnable() {
@@ -242,6 +242,7 @@ public class EhcacheWithKryo {
                         long key = i % testSize;
                         List<WorkExperience> list = cache.get(key);
                         if (list == null) {
+                            System.out.println("getThread:" + Thread.currentThread().getName() + " put key: " + key + "!!!!");
                             cache.put(key, getList(key, key + 1));
                         } else {
                             sum += list.size();

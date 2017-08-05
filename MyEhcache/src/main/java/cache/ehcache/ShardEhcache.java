@@ -5,6 +5,7 @@ import cache.CacheStats;
 import cache.StatsCounter;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -82,12 +83,22 @@ public class ShardEhcache<K, V> implements Cache<K, V> {
 
     @Override
     public Map<K, V> getAll(Set<? extends K> keys) {
-        Map<K, V> result = new HashMap<>((int) (keys.size() / .75) + 1);
+        Map<Integer, Set<K>> shardKeySetMap = new HashMap<>((int) (caches.length / .75) + 1);
         for (K key : keys) {
-            V value = get(key);
-            if (value != null) {
-                result.put(key, value);
+            int shard = hash(key) & mask;
+            Set<K> shardKeySet = shardKeySetMap.get(shard);
+            if (shardKeySet == null) {
+                shardKeySet = new HashSet<>((int) ((keys.size() / caches.length) / .75) + 1);
+                shardKeySetMap.put(shard, shardKeySet);
             }
+            shardKeySet.add(key);
+        }
+
+        Map<K, V> result = new HashMap<>((int) (keys.size() / .75) + 1);
+        for (Map.Entry<Integer, Set<K>> entry : shardKeySetMap.entrySet()) {
+            Integer index = entry.getKey();
+            Set<K> shardKeySet = entry.getValue();
+            result.putAll(caches[index].getAll(shardKeySet));
         }
         return result;
     }
