@@ -228,7 +228,9 @@ public final class EhcacheBuilder<K, V> {
         String cacheName = getCacheName();
         org.ehcache.Cache<K1, V1>[] caches = new org.ehcache.Cache[shardNum];
         for (int i = 0; i < shardNum; ++i) {
-            caches[i] = cacheManager.createCache(cacheName + "_" + i, cacheConfiguration);
+            String name = cacheName + "_" + i;
+            caches[i] = cacheManager.createCache(name, cacheConfiguration);
+            System.out.println("cache: " + name + " created");
         }
         return new ShardEhcache<>(caches, cacheName, statsCounter);
     }

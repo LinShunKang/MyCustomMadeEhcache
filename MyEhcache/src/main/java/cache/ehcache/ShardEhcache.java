@@ -69,6 +69,25 @@ public class ShardEhcache<K, V> implements Cache<K, V> {
         }
     }
 
+    /**
+     * 由于ehcache本身并不提供getIfPresent接口，所以利用曲线救国的方法:
+     * 如果containsKey()返回true，就调用get()方法；
+     * 为什么不直接调用get()方法呢？
+     * 因为如果你指定了CacheLoaderWriter，那么get()方法就一定会返回不为null的值，也就违背了getIfPresent()方法的本意；
+     * @param key
+     * @return
+     */
+    @Override
+    public V getIfPresent(K key) {
+        org.ehcache.Cache<K, V> cache = getCache(key);
+        V result = null;
+        if (cache.containsKey(key)) {
+            result = cache.get(key);
+        }
+        record(result);
+        return result;
+    }
+
     @Override
     public void put(K key, V value) {
         org.ehcache.Cache<K, V> cache = getCache(key);

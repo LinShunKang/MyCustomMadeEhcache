@@ -19,10 +19,10 @@ public class TestCacheLoader {
     private static Cache<Long, List<WorkExperience>> cache = EhcacheBuilder.newBuilder(Long.class, List.class)
             .cacheName("GeekWorkExp")
             .compress(true)
-            .heap(64)
-//            .offHeap(256)
+//            .heap(64)
+            .offHeap(256)
             .shardNum(16)
-            .expireAfterWrite(20, TimeUnit.SECONDS)
+            .expireAfterWrite(20, TimeUnit.MINUTES)
             .loaderWriter(new AbstractCacheLoader<Long, List>() {
                 @Override
                 public List load(Long key) throws Exception {
@@ -44,7 +44,10 @@ public class TestCacheLoader {
             .build();
 
     public static void main(String[] args) throws InterruptedException {
-        test(2, 10, 10000);
+//        test(2, 10, 1000000);
+//        testGetIfPresent();
+        compareGetAndGetIfPresent(100000);
+        compareGetAndGetIfPresent(10000000);
     }
 
     private static void test(int putThreadCount, int getThreadCount, int testSize) throws InterruptedException {
@@ -76,12 +79,12 @@ public class TestCacheLoader {
                     long sum = 0L;
                     for (long i = 0; i < Long.MAX_VALUE; ++i) {
                         long key = i % testSize;
-                        Set<Long> keySet = new HashSet<>();
-                        for (long k = 0; k < 1000; ++k) {
-                            keySet.add(k);
-                        }
-                        Map<Long, List<WorkExperience>> list = cache.getAll(keySet);
-//                        List<WorkExperience> list = cache.get(key);
+//                        Set<Long> keySet = new HashSet<>();
+//                        for (long k = 0; k < 1000; ++k) {
+//                            keySet.add(k);
+//                        }
+//                        Map<Long, List<WorkExperience>> list = cache.getAll(keySet);
+                        List<WorkExperience> list = cache.get(key);
                         sum += list.size();
                     }
                     System.out.println("thread:" + Thread.currentThread().getName() + " end!!! sum: " + sum);
@@ -93,9 +96,6 @@ public class TestCacheLoader {
 
 
         while (true) {
-//            debugThreadPool.execute(new Runnable() {
-//                @Override
-//                public void run() {
             int duplicateKey = 0;
             List<Long> keyList = new ArrayList<>(12000);
             loadKeyQueue.drainTo(keyList);
@@ -118,8 +118,6 @@ public class TestCacheLoader {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-//                }
-//            });
         }
 
 //        TimeUnit.DAYS.sleep(10);
@@ -131,5 +129,30 @@ public class TestCacheLoader {
             result.add(WorkExperience.getIntance(userId, minId + i));
         }
         return result;
+    }
+
+    private static void testGetIfPresent() {
+        System.out.println(cache.getIfPresent(1L));
+        System.out.println(cache.get(1L));
+        cache.put(1L, getList(1000, 1));
+        System.out.println(cache.getIfPresent(1L));
+    }
+
+    private static void compareGetAndGetIfPresent(int testTimes) {
+        System.out.println(cache.get(1L));
+
+        long startTime = System.currentTimeMillis();
+        long sum = 0L;
+        for (int i = 0; i < testTimes; ++i) {
+            sum += cache.get(1L).size();
+        }
+        System.out.println("cache.get: cost " + (System.currentTimeMillis() - startTime) + "ms, sum: " + sum);
+
+
+        sum = 0L;
+        for (int i = 0; i < testTimes; ++i) {
+            sum += cache.getIfPresent(1L).size();
+        }
+        System.out.println("cache.getIfPresent: cost " + (System.currentTimeMillis() - startTime) + "ms, sum: " + sum);
     }
 }

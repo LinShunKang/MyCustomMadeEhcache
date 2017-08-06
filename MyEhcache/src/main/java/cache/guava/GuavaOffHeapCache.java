@@ -48,6 +48,11 @@ public class GuavaOffHeapCache<K, V> implements Cache<K, V> {
     }
 
     @Override
+    public V getIfPresent(K key) {
+        return get(key);
+    }
+
+    @Override
     public void remove(K key) {
         byteBufferCache.invalidate(key);
     }
