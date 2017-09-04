@@ -34,7 +34,11 @@ public final class EhcacheBuilder<K, V> {
 
     private static final long DEFAULT_HEAP_SIZE = 0;
 
-    private static final long DEFAULT_OFF_HEAP_SIZE = 256;
+    private static final MemoryUnit DEFAULT_HEAP_MEM_UNIT = MemoryUnit.MB;
+
+    private static final long DEFAULT_OFF_HEAP_SIZE = 128;
+
+    private static final MemoryUnit DEFAULT_OFF_HEAP_MEM_UNIT = MemoryUnit.MB;
 
     private static final AtomicInteger DEFAULT_CACHE_NAME_SUFFIX = new AtomicInteger(0);
 
@@ -83,9 +87,13 @@ public final class EhcacheBuilder<K, V> {
 
     private int shardNum = DEFAULT_CACHE_SHARD_NUM;
 
-    private long heapSize = DEFAULT_HEAP_SIZE;
+    private long heapSizePerShard = DEFAULT_HEAP_SIZE;
 
-    private long offHeapSize = DEFAULT_OFF_HEAP_SIZE;
+    private MemoryUnit heapMemoryUnit = DEFAULT_HEAP_MEM_UNIT;
+
+    private long offHeapSizePerShard = DEFAULT_OFF_HEAP_SIZE;
+
+    private MemoryUnit offHeapMemoryUnit = DEFAULT_OFF_HEAP_MEM_UNIT;
 
     private Class keyClass;
 
@@ -138,13 +146,35 @@ public final class EhcacheBuilder<K, V> {
         return cacheName != null ? cacheName : DEFAULT_CACHE_NAME_PREFIX + DEFAULT_CACHE_NAME_SUFFIX.getAndIncrement();
     }
 
-    public EhcacheBuilder<K, V> heap(long heapSizeOfMB) {
-        this.heapSize = heapSizeOfMB;
+    /**
+     * 注意：实际上总的堆内内存大小为shardNum*heapPerShard
+     *
+     * @param heapSizePerShard 单个分片所占的堆内内存大小(MB)
+     * @return
+     */
+    public EhcacheBuilder<K, V> heapPerShard(long heapSizePerShard, MemoryUnit memoryUnit) {
+        if (heapSizePerShard < 0 || memoryUnit == null) {
+            throw new IllegalArgumentException("heapPerShardSizeOfMB must >= 0 and memoryUnit must not null!!!");
+        }
+
+        this.heapSizePerShard = heapSizePerShard;
+        this.heapMemoryUnit = memoryUnit;
         return this;
     }
 
-    public EhcacheBuilder<K, V> offHeap(long offHeapSizeOfMB) {
-        this.offHeapSize = offHeapSizeOfMB;
+    /**
+     * 注意：实际上总的堆外内存大小为shardNum*heapSizePerShard
+     *
+     * @param offHeapSizePerShard 单个分片所占的堆外内存大小(MB)
+     * @return
+     */
+    public EhcacheBuilder<K, V> offHeapPerShard(long offHeapSizePerShard, MemoryUnit memoryUnit) {
+        if (offHeapSizePerShard < 0) {
+            throw new IllegalArgumentException("offHeapSizePerShard must >= 0 and memoryUnit must not null!!!");
+        }
+
+        this.offHeapSizePerShard = offHeapSizePerShard;
+        this.offHeapMemoryUnit = memoryUnit;
         return this;
     }
 
@@ -207,6 +237,8 @@ public final class EhcacheBuilder<K, V> {
 
     @SuppressWarnings("unchecked")
     public <K1 extends K, V1 extends V> Cache<K1, V1> build() {
+        checkParams();
+
         CacheConfigurationBuilder<K1, V1> configurationBuilder = CacheConfigurationBuilder.newCacheConfigurationBuilder(keyClass, valueClass, getResourcePoolsBuilder())
                 .withSizeOfMaxObjectGraph(100)
                 .withSizeOfMaxObjectSize(50, MemoryUnit.KB)
@@ -235,15 +267,18 @@ public final class EhcacheBuilder<K, V> {
         return new ShardEhcache<>(caches, cacheName, statsCounter);
     }
 
+    private void checkParams() {
+        if (heapSizePerShard <= 0L && offHeapSizePerShard <= 0L) {
+            throw new IllegalArgumentException("heapSizePerShard and offHeapSizePerShard must have one great than 0!!!");
+        }
+    }
+
     private ResourcePoolsBuilder getResourcePoolsBuilder() {
-        long heapSize = this.heapSize / shardNum;
         ResourcePoolsBuilder builder = ResourcePoolsBuilder.newResourcePoolsBuilder();
-        if (heapSize > 0L) {
-            builder = builder.heap(heapSize, MemoryUnit.MB);
+        if (heapSizePerShard > 0L) {
+            builder = builder.heap(heapSizePerShard, heapMemoryUnit);
         }
 
-        long offHeapSize = this.offHeapSize / shardNum;
-        offHeapSize = offHeapSize > 0L ? offHeapSize : 1L;
-        return builder.offheap(offHeapSize, MemoryUnit.MB);
+        return builder.offheap(offHeapSizePerShard, offHeapMemoryUnit);
     }
 }

@@ -4,6 +4,7 @@ import MyCustomMadeEhcache.model.WorkExperience;
 import cache.Cache;
 import cache.ehcache.AbstractCacheLoader;
 import cache.ehcache.EhcacheBuilder;
+import org.ehcache.config.units.MemoryUnit;
 import org.ehcache.spi.loaderwriter.BulkCacheLoadingException;
 
 import java.util.*;
@@ -19,8 +20,8 @@ public class TestCacheLoader {
     private static Cache<Long, List<WorkExperience>> cache = EhcacheBuilder.newBuilder(Long.class, List.class)
             .cacheName("GeekWorkExp")
             .compress(true)
-//            .heap(64)
-            .offHeap(256)
+//            .heapPerShard(64)
+            .offHeapPerShard(256, MemoryUnit.MB)
             .shardNum(16)
             .expireAfterWrite(20, TimeUnit.MINUTES)
             .loaderWriter(new AbstractCacheLoader<Long, List>() {

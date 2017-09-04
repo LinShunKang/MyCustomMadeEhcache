@@ -4,6 +4,7 @@ import cache.Cache;
 import cache.ehcache.PrintCacheEventListener;
 import cache.ehcache.EhcacheBuilder;
 import MyCustomMadeEhcache.model.WorkExperience;
+import org.ehcache.config.units.MemoryUnit;
 import org.ehcache.event.EventType;
 
 import java.util.ArrayList;
@@ -52,8 +53,8 @@ public class EhcacheWithKryo {
         Cache<Long, List<WorkExperience>> cache = EhcacheBuilder.newBuilder(Long.class, List.class)
                 .cacheName("GeekWorkExp")
                 .compress(true)
-                .heap(64)
-                .offHeap(256)
+                .heapPerShard(64, MemoryUnit.MB)
+                .offHeapPerShard(256, MemoryUnit.MB)
                 .expireAfterWrite(5, TimeUnit.MINUTES)
                 .build();
 
@@ -83,8 +84,8 @@ public class EhcacheWithKryo {
         Cache<Long, List<WorkExperience>> cache = EhcacheBuilder.newBuilder(Long.class, List.class)
                 .cacheName("GeekWorkExp2")
                 .compress(false)
-                .heap(64)
-                .offHeap(256)
+                .heapPerShard(64, MemoryUnit.MB)
+                .offHeapPerShard(256, MemoryUnit.MB)
                 .expireAfterWrite(5, TimeUnit.MINUTES)
                 .build();
 
@@ -108,8 +109,8 @@ public class EhcacheWithKryo {
         Cache<Long, List<WorkExperience>> cache = EhcacheBuilder.newBuilder(Long.class, List.class)
                 .cacheName("GeekWorkExp3")
                 .compress(false)
-                .heap(1)
-                .offHeap(2)
+                .heapPerShard(1, MemoryUnit.MB)
+                .offHeapPerShard(2, MemoryUnit.MB)
                 .expireAfterWrite(5, TimeUnit.MINUTES)
                 .build();
 
@@ -121,8 +122,8 @@ public class EhcacheWithKryo {
                 .cacheName("GeekWorkExp4")
 //                .compress(true)
                 .compress(false)
-                .heap(0)
-                .offHeap(2)
+                .heapPerShard(0, MemoryUnit.MB)
+                .offHeapPerShard(2, MemoryUnit.MB)
                 .expireAfterWrite(10, TimeUnit.HOURS)
                 .cacheEventListener(new PrintCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
                 .build();
@@ -178,8 +179,8 @@ public class EhcacheWithKryo {
                 .cacheName("GeekWorkExp5")
                 .shardNum(1)
                 .compress(false)
-                .heap(0)
-                .offHeap(2 * 1024)
+                .heapPerShard(0, MemoryUnit.MB)
+                .offHeapPerShard(2 * 1024, MemoryUnit.MB)
                 .expireAfterWrite(10, TimeUnit.HOURS)
                 .cacheEventListener(new PrintCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
                 .build();
@@ -193,8 +194,8 @@ public class EhcacheWithKryo {
                 .cacheName("GeekWorkExp6")
                 .shardNum(16)
                 .compress(false)
-                .heap(0)
-                .offHeap(2 * 1024)
+                .heapPerShard(0, MemoryUnit.MB)
+                .offHeapPerShard(2 * 1024, MemoryUnit.MB)
                 .expireAfterWrite(10, TimeUnit.HOURS)
                 .cacheEventListener(new PrintCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
                 .build();
@@ -207,8 +208,8 @@ public class EhcacheWithKryo {
                 .cacheName("GeekWorkExp7")
                 .shardNum(16)
                 .compress(true)
-                .heap(0)
-                .offHeap(256)
+                .heapPerShard(0, MemoryUnit.MB)
+                .offHeapPerShard(256, MemoryUnit.MB)
                 .expireAfterWrite(1, TimeUnit.HOURS)
 //                .cacheEventListener(new PrintCacheEventListener<>(), EventType.EVICTED, EventType.EXPIRED)
                 .build();

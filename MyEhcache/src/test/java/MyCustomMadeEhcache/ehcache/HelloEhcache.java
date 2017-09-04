@@ -37,7 +37,7 @@ public class HelloEhcache {
 
     public static void test1() {
         ResourcePoolsBuilder builder = ResourcePoolsBuilder
-//                .heap(64, MemoryUnit.MB)
+//                .heapPerShard(64, MemoryUnit.MB)
                 .heap(99)
 //                .offheap(256, MemoryUnit.MB);
                 ;
