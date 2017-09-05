@@ -59,6 +59,11 @@ public final class EhcacheBuilder<K, V> {
         }
 
         @Override
+        public void recordFakeHits(int count) {
+            //empty
+        }
+
+        @Override
         public void recordMisses(int count) {
             //empty
         }
@@ -111,7 +116,7 @@ public final class EhcacheBuilder<K, V> {
 
     private CacheEventListenerConfigurationBuilder cacheEventListenerConfigurationBuilder;
 
-    private CacheLoaderWriter cacheLoaderWriter;
+    private SimpleCacheLoader cacheLoaderWriter;
 
     private StatsCounter statsCounter = DEFAULT_STATS_COUNTER;
 
@@ -225,13 +230,17 @@ public final class EhcacheBuilder<K, V> {
         return this;
     }
 
+    @SuppressWarnings("unchecked")
     public EhcacheBuilder<K, V> recordStats() {
-        statsCounter = SimpleStatsCounter.getInstance();
+        this.statsCounter = SimpleStatsCounter.getInstance();
+        if (cacheLoaderWriter != null) {
+            this.cacheLoaderWriter = SimpleCacheLoader.getInstance(cacheLoaderWriter.getCacheLoaderWriter(), statsCounter);
+        }
         return this;
     }
 
     public EhcacheBuilder<K, V> loaderWriter(CacheLoaderWriter<K, V> cacheLoaderWriter) {
-        this.cacheLoaderWriter = cacheLoaderWriter;
+        this.cacheLoaderWriter = SimpleCacheLoader.getInstance(cacheLoaderWriter, statsCounter);
         return this;
     }
 

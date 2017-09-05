@@ -24,6 +24,7 @@ public class TestCacheLoader {
             .offHeapPerShard(256, MemoryUnit.MB)
             .shardNum(16)
             .expireAfterWrite(20, TimeUnit.MINUTES)
+            .recordStats()
             .loaderWriter(new AbstractCacheLoader<Long, List>() {
                 @Override
                 public List load(Long key) throws Exception {
@@ -45,10 +46,11 @@ public class TestCacheLoader {
             .build();
 
     public static void main(String[] args) throws InterruptedException {
-//        test(2, 10, 1000000);
+//        test(2, 10, 100);
 //        testGetIfPresent();
-        compareGetAndGetIfPresent(100000);
-        compareGetAndGetIfPresent(10000000);
+//        compareGetAndGetIfPresent(100000);
+//        compareGetAndGetIfPresent(10000000);
+        simpleTest();
     }
 
     private static void test(int putThreadCount, int getThreadCount, int testSize) throws InterruptedException {
@@ -114,6 +116,7 @@ public class TestCacheLoader {
             }
 
             System.out.println("duplicateKey: " + duplicateKey);
+            System.out.println("cache.stats():" + cache.stats());
             try {
                 TimeUnit.SECONDS.sleep(20);
             } catch (InterruptedException e) {
@@ -155,5 +158,15 @@ public class TestCacheLoader {
             sum += cache.getIfPresent(1L).size();
         }
         System.out.println("cache.getIfPresent: cost " + (System.currentTimeMillis() - startTime) + "ms, sum: " + sum);
+    }
+
+    private static void simpleTest() {
+        for (int k = 0; k < 10; ++k) {
+            for (long i = 0; i < 10; ++i) {
+                cache.get(i);
+            }
+        }
+
+        System.out.println(cache.stats());
     }
 }
